@@ -43,7 +43,14 @@ async def download_playlist(url: HttpUrl, resolution: str):
                 return {'data': video_data}
             elif resolution == 'mp4':
                 for video in playlist_videos:
-                    best_formats = []
+                    video_info = {
+                        'title': video['title'],
+                        'thumbnail': video['thumbnail'],
+                        'duration_sec': video['duration'],
+                        'channel_name': video['uploader'],
+                        'streams': []
+                    }
+
                     for fmt in video['formats']:
                         if fmt['vcodec'] != 'none' and fmt['acodec'] != 'none':
                             if fmt['filesize'] is None:
@@ -56,17 +63,14 @@ async def download_playlist(url: HttpUrl, resolution: str):
                                         if resolution == '720p' and fmt_['filesize'] > fmt['filesize']:
                                             break
                             new_format = {
-                                'title': video['title'],
-                                'thumbnail': video['thumbnail'],
-                                'duration_sec': video['duration'],
-                                'channel_name': video['uploader'],
+
                                 'quality': fmt['format_note'],
                                 'size_in_mb': fmt['filesize'] / (1024 * 1024),
                                 'media_type': fmt['ext'],
                                 'url': fmt['url']
                             }
-                            best_formats.append(new_format)
-                    video_data.append(best_formats)
+                            video_info['streams'].append(new_format)
+                    video_data.append(video_info)
                 return {'data': video_data}
             else:
                 return {"error": "Format not available"}
